@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>视频处理</title>
+</head>
+<body>
+    <h1>上传视频处理</h1>
+    <input type="file" id="videoFile" accept="video/*">
+    <button onclick="uploadVideo()">上传</button>
+
+    <div id="results"></div>
+
+    <script>
+        async function uploadVideo() {
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('请选择一个视频文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/process_video', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const videoUrl = result.video_url;
+                    const counters = result.counters;
+
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = `<h2>处理后的视频:</h2>
+                                            <video controls width="640" height="480" src="${videoUrl}"></video>
+                                            <p>处理结果: ${counters}</p>`;
+                } else {
+                    const error = await response.json();
+                    console.error('视频处理错误:', error.error);
+                    alert(`视频处理错误: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('视频上传错误:', error);
+                alert('视频上传错误:', error);
+            }
+        }
+    </script>
+</body>
+</html>
